@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+const unknown = 0b111111111
 const zero = 0b000000000
 const one = 0b000000001
 const two = 0b000000010
@@ -24,40 +25,72 @@ type Board struct {
 	values [9][9]int
 }
 
+// These are used to convert back and forth between bitwise representations and integers.
+var bit2Int = map[int]int{
+	zero:  0,
+	one:   1,
+	two:   2,
+	three: 3,
+	four:  4,
+	five:  5,
+	six:   6,
+	seven: 7,
+	eight: 8,
+	nine:  9,
+}
+var int2Bit = map[int]int{
+	0: zero,
+	1: one,
+	2: two,
+	3: three,
+	4: four,
+	5: five,
+	6: six,
+	7: seven,
+	8: eight,
+	9: nine,
+}
+
+func (b Board) Print() {
+	for row := 0; row < 9; row++ {
+		if row%3 == 0 {
+			fmt.Println("+-------+-------+-------+")
+		}
+		for col := 0; col < 9; col++ {
+			if col%3 == 0 {
+				fmt.Printf("| ")
+			}
+
+			i := bit2Int[b.values[row][col]]
+			if i == 0 {
+				fmt.Printf("·")
+			} else {
+				fmt.Printf("%d")
+			}
+			fmt.Printf(" ")
+		}
+		fmt.Println("|")
+	}
+	fmt.Println("+-------+-------+-------+")
+}
+
 func initialize() Board {
 	rand.Seed(time.Now().Unix())
 
-	return Board{}
+	b := Board{}
+	for row := 0; row < 9; row++ {
+		for col := 0; col < 9; col++ {
+			// All possible values (representing 1-9) are initialized as valid choices.
+			b.values[row][col] = unknown
+		}
+	}
+	return b
 }
 
 func main() {
 	board := initialize()
 
-	bit2Int := map[int]int{
-		zero:  0,
-		one:   1,
-		two:   2,
-		three: 3,
-		four:  4,
-		five:  5,
-		six:   6,
-		seven: 7,
-		eight: 8,
-		nine:  9,
-	}
-
-	int2Bit := map[int]int{
-		0: zero,
-		1: one,
-		2: two,
-		3: three,
-		4: four,
-		5: five,
-		6: six,
-		7: seven,
-		8: eight,
-		9: nine,
-	}
+	board.Print()
 
 	// Populate board
 	fmt.Println("Populate the board left to right, top to bottom:")
@@ -74,4 +107,6 @@ func main() {
 			}
 		}
 	}
+
+	board.Print()
 }
