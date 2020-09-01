@@ -49,7 +49,7 @@ type Board struct {
 	values [9][9]int
 }
 
-func (b Board) PrintChoice(row int, col int, pos int) string {
+func (b *Board) PrintChoice(row int, col int, pos int) string {
 	if b.values[row][col]&int2Bit[pos] > 0 {
 		return strconv.Itoa(pos)
 	} else {
@@ -57,7 +57,7 @@ func (b Board) PrintChoice(row int, col int, pos int) string {
 	}
 }
 
-func (b Board) Print() {
+func (b *Board) Print() {
 	for row := 0; row < 9; row++ {
 		if row == 0 {
 			fmt.Println("┏━━━━━━━┯━━━━━━━┯━━━━━━━┳━━━━━━━┯━━━━━━━┯━━━━━━━┳━━━━━━━┯━━━━━━━┯━━━━━━━┓")
@@ -82,7 +82,7 @@ func (b Board) Print() {
 	fmt.Println("┗━━━━━━━┷━━━━━━━┷━━━━━━━┻━━━━━━━┷━━━━━━━┷━━━━━━━┻━━━━━━━┷━━━━━━━┷━━━━━━━┛")
 }
 
-func (b Board) PrintChoices(row int, col int, pass int) {
+func (b *Board) PrintChoices(row int, col int, pass int) {
 	if pass == 0 {
 		if b.values[row][col]&one > 0 {
 			fmt.Printf("1")
@@ -144,8 +144,13 @@ func (e *InvalidChoice) Error() string {
 	return fmt.Sprintf("%d @ %d x %d", e.Number, e.Row, e.Column)
 }
 
-func (b Board) CheckMove(row int, col int, number int) error {
+func (b *Board) CheckMove(row int, col int, number int) error {
 	bit := int2Bit[number]
+
+	if b.values[row][col] == bit {
+		// This choice has already been made.
+		return &InvalidChoice{row, col, number}
+	}
 
 	if b.values[row][col]&bit == 0 {
 		// This bit is not an available choice for this row x col
@@ -180,7 +185,7 @@ func (b Board) CheckMove(row int, col int, number int) error {
 	return nil
 }
 
-func (b Board) MakeMove(row int, col int, number int) error {
+func (b *Board) MakeMove(row int, col int, number int) error {
 	err := b.CheckMove(row, col, number)
 	if err != nil {
 		fmt.Println(err)
