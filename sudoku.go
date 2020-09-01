@@ -57,11 +57,6 @@ func (b Board) PrintChoice(row int, col int, pos int) string {
 	}
 }
 
-// ╔━━━━━━━╤━━━━━━━╤━━━━━━━╦━
-// ║ 1 2 3 | 1 2 3 | 1 2 3 ║
-// ║ 4 5 6 | 4 5 6 | 4 5 6 ║
-// ║ 7 8 9 | 7 8 9 | 7 8 9 ║
-// ╟───────┼───────┼───────╫─
 func (b Board) Print() {
 	for row := 0; row < 9; row++ {
 		if row == 0 {
@@ -139,6 +134,85 @@ func (b Board) PrintChoices(row int, col int, pass int) {
 	}
 }
 
+type InvalidChoice struct {
+	Row    int
+	Column int
+	Number int
+}
+
+func (e *InvalidChoice) Error() string {
+	return fmt.Sprintf("%d @ %d x %d", e.Number, e.Row, e.Column)
+}
+
+func (b Board) CheckMove(row int, col int, number int) error {
+	bit := int2Bit[number]
+
+	if b.values[row][col]&bit == 0 {
+		// This bit is not an available choice for this row x col
+		return &InvalidChoice{row, col, number}
+	}
+
+	// Check to make sure the choice is viable for this row.
+	for r := 0; r < 9; r++ {
+		if b.values[r][col] == bit {
+			// This bit has already been chosen in this r x col
+			return &InvalidChoice{row, col, number}
+		}
+	}
+
+	// Check to make sure the choice is viable for this column.
+	for c := 0; c < 9; c++ {
+		if b.values[row][c] == bit {
+			// This bit has already been chosen in this r x col
+			return &InvalidChoice{row, col, number}
+		}
+	}
+
+	// Check to make sure the choice is viable for this block.
+	for r := row - row%3; r < row-row%3+3; r++ {
+		for c := col - col%3; c < col-col%3+3; c++ {
+			if b.values[r][c] == bit {
+				// This bit has already been chosen in this r x col
+				return &InvalidChoice{row, col, number}
+			}
+		}
+	}
+	return nil
+}
+
+func (b Board) MakeMove(row int, col int, number int) error {
+	err := b.CheckMove(row, col, number)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	bit := int2Bit[number]
+
+	// Eliminate the choice for this row.
+	for r := 0; r < 9; r++ {
+		b.values[r][col] = b.values[r][col] &^ bit
+	}
+
+	// Eliminate the choice for this column.
+	for c := 0; c < 9; c++ {
+		b.values[row][c] = b.values[row][c] &^ bit
+	}
+
+	// Eliminate the choice for this block.
+	for r := row - (row % 3); r < row-(row%3)+3; r++ {
+		for c := col - (col % 3); c < col-(col%3)+3; c++ {
+			b.values[r][c] = b.values[r][c] &^ bit
+		}
+	}
+
+	// Make the move.
+	b.values[row][col] = bit
+
+	b.Print()
+	return nil
+}
+
 func initialize() Board {
 	rand.Seed(time.Now().Unix())
 
@@ -156,4 +230,6 @@ func main() {
 	board := initialize()
 
 	board.Print()
+	board.MakeMove(0, 0, 1)
+	board.MakeMove(0, 0, 1)
 }
