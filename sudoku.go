@@ -72,8 +72,6 @@ func (b Board) Print() {
 			fmt.Println("┠───────┼───────┼───────╂───────┼───────┼───────╂───────┼───────┼───────┨")
 		}
 
-		// "┨"
-		// "┃"
 		for pos := 0; pos < 3; pos++ {
 			for col := 0; col < 9; col++ {
 				if col%3 == 0 {
@@ -87,7 +85,6 @@ func (b Board) Print() {
 		}
 	}
 	fmt.Println("┗━━━━━━━┷━━━━━━━┷━━━━━━━┻━━━━━━━┷━━━━━━━┷━━━━━━━┻━━━━━━━┷━━━━━━━┷━━━━━━━┛")
-
 }
 
 func (b Board) PrintChoices(row int, col int, pass int) {
